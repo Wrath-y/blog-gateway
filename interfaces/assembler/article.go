@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"gateway/infrastructure/util/util/highperf"
 	"gateway/interfaces/dto"
+	"strconv"
 )
 
 func ToArticleDTOs(articles string) ([]*dto.ArticlesItem, error) {
@@ -20,4 +21,9 @@ func ToArticleDTO(article string) (*dto.Article, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func StrToInt64(str string) int64 {
+	id, _ := strconv.Atoi(str)
+	return int64(id)
 }

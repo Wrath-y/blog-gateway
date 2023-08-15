@@ -10,6 +10,9 @@ import (
 func loadApi(r *gin.RouterGroup) {
 	a := r.Group("/api", context.Handle(middleware.Logging))
 	{
+		a.GET("/pixivs", context.Handle(facade.GetPixivs))
+		a.GET("/friends", context.Handle(facade.GetFriends))
+
 		ars := a.Group("articles")
 		{
 			ars.GET("", context.Handle(facade.GetArticles))
@@ -18,6 +21,13 @@ func loadApi(r *gin.RouterGroup) {
 		ar := a.Group("article")
 		{
 			ar.GET("/:id", context.Handle(facade.GetArticle))
+		}
+
+		cm := a.Group("comments")
+		{
+			cm.GET("", context.Handle(facade.GetComments))
+			cm.GET("/count", context.Handle(facade.GetCommentCount))
+			cm.POST("", context.Handle(facade.AddComment))
 		}
 	}
 }

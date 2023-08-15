@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;  // 声明所在包
+
+option go_package = "./;proto";
+
+import "google/protobuf/empty.proto";
+import "interfaces/proto/common.proto";
+
+service Toys {
+  rpc GetPixivs (GetPixivsReq) returns (Response) {}
+  rpc GetFriends (google.protobuf.Empty) returns (Response) {}
+}
+
+message GetPixivsReq {
+  string next_marker = 1;
+  int32 page = 2;
+}

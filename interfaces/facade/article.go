@@ -9,9 +9,13 @@ import (
 )
 
 func GetArticles(c *context.Context) {
-	lastId := c.GetInt64("last_id")
+	lastIdStr, ok := c.GetQuery("last_id")
+	if !ok {
+		c.FailWithErrCode(errcode.BlogNetworkBusy, ok)
+		return
+	}
 
-	rpcResp, err := service.NewArticleApplicationService(c).GetArticles(lastId, 6)
+	rpcResp, err := service.NewArticleApplicationService(c).GetArticles(assembler.StrToInt64(lastIdStr), 6)
 	if err != nil {
 		c.FailWithErrCode(errcode.BlogNetworkBusy, nil)
 		return

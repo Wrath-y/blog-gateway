@@ -7,101 +7,105 @@ import (
 	"gateway/infrastructure/util/consul"
 	"gateway/infrastructure/util/grpcclient"
 	"gateway/interfaces/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"time"
 )
 
-type ArticleApplicationService struct {
+type CommentApplicationService struct {
 	*ctx.Context
 }
 
-func NewArticleApplicationService(ctx *ctx.Context) *ArticleApplicationService {
-	return &ArticleApplicationService{
+func NewCommentApplicationService(ctx *ctx.Context) *CommentApplicationService {
+	return &CommentApplicationService{
 		ctx,
 	}
 }
 
-func (a *ArticleApplicationService) GetById(id int64) (*proto.Response, error) {
-	c, grpcClient, closeFunc, err := a.getClientAndContext("article")
+func (a *CommentApplicationService) GetComments(id, articleId int64) (*proto.Response, error) {
+	c, grpcClient, closeFunc, err := a.getClientAndContext("comment")
 	if err != nil {
 		a.Logger.ErrorL("获取client失败", "", err.Error())
 		return nil, err
 	}
 	defer closeFunc()
 
-	req := &proto.GetByIdReq{
-		Id: id,
-	}
-	rpcResp, err := grpcClient.GetById(c, req)
-	if err != nil {
-		return nil, err
-	}
-	if rpcResp.Code != 0 {
-		a.Logger.ErrorL("文章详情返回异常", req, rpcResp)
-		return nil, errcode.BlogNetworkBusy
-	}
-	if rpcResp.Data == "" {
-		a.Logger.ErrorL("文章详情返回空数据", req, rpcResp)
-		return nil, errcode.BlogNetworkBusy
-	}
-
-	return rpcResp, nil
-}
-
-func (a *ArticleApplicationService) GetArticles(id int64, size int32) (*proto.Response, error) {
-	c, grpcClient, closeFunc, err := a.getClientAndContext("article")
-	if err != nil {
-		a.Logger.ErrorL("获取client失败", "", err.Error())
-		return nil, err
-	}
-	defer closeFunc()
-
-	req := &proto.FindByIdReq{
-		Id:   id,
-		Size: size,
+	req := &proto.GetCommentsReq{
+		Id:        id,
+		ArticleId: articleId,
 	}
 	a.Logger.Info("rpc请求参数", req, "")
-	rpcResp, err := grpcClient.FindById(c, req)
+	rpcResp, err := grpcClient.GetComments(c, req)
 	if err != nil {
+		a.Logger.ErrorL("rpc请求失败", req, err.Error())
 		return nil, err
 	}
 	if rpcResp.Code != 0 {
-		a.Logger.ErrorL("文章列表返回异常", req, rpcResp)
+		a.Logger.ErrorL("评论列表返回异常", req, rpcResp)
 		return nil, errcode.BlogNetworkBusy
 	}
 	if rpcResp.Data == "" {
-		a.Logger.ErrorL("文章列表返回空数据", req, rpcResp)
+		a.Logger.ErrorL("评论列表返回空数据", req, rpcResp)
 		return nil, errcode.BlogNetworkBusy
 	}
 
 	return rpcResp, nil
 }
 
-func (a *ArticleApplicationService) GetAllArticles() (*proto.Response, error) {
-	c, grpcClient, closeFunc, err := a.getClientAndContext("article")
+func (a *CommentApplicationService) GetCountByArticleId(articleId int64) (*proto.Response, error) {
+	c, grpcClient, closeFunc, err := a.getClientAndContext("comment")
 	if err != nil {
 		a.Logger.ErrorL("获取client失败", "", err.Error())
 		return nil, err
 	}
 	defer closeFunc()
 
-	rpcResp, err := grpcClient.FindAll(c, &emptypb.Empty{})
+	req := &proto.OnlyArticleIdReq{
+		ArticleId: articleId,
+	}
+	a.Logger.Info("rpc请求参数", req, "")
+	rpcResp, err := grpcClient.GetCountByArticleId(c, req)
 	if err != nil {
+		a.Logger.ErrorL("rpc请求失败", req, err.Error())
 		return nil, err
 	}
 	if rpcResp.Code != 0 {
-		a.Logger.ErrorL("所有文章列表返回异常", "", rpcResp)
+		a.Logger.ErrorL("评论数量返回异常", req, rpcResp)
 		return nil, errcode.BlogNetworkBusy
 	}
 	if rpcResp.Data == "" {
-		a.Logger.ErrorL("所有文章列表返回空数据", "", rpcResp)
+		a.Logger.ErrorL("评论数量返回空数据", req, rpcResp)
 		return nil, errcode.BlogNetworkBusy
 	}
 
 	return rpcResp, nil
 }
 
-func (a *ArticleApplicationService) getClientAndContext(serviceName string) (context.Context, proto.ArticleClient, func(), error) {
+func (a *CommentApplicationService) AddComment(req *proto.AddCommentReq) (*proto.Response, error) {
+	c, grpcClient, closeFunc, err := a.getClientAndContext("comment")
+	if err != nil {
+		a.Logger.ErrorL("获取client失败", "", err.Error())
+		return nil, err
+	}
+	defer closeFunc()
+
+	a.Logger.Info("rpc请求参数", req, "")
+	rpcResp, err := grpcClient.AddComment(c, req)
+	if err != nil {
+		a.Logger.ErrorL("rpc请求失败", req, err.Error())
+		return nil, err
+	}
+	if rpcResp.Code != 0 {
+		a.Logger.ErrorL("添加评论返回异常", req, rpcResp)
+		return nil, errcode.BlogNetworkBusy
+	}
+	if rpcResp.Data == "" {
+		a.Logger.ErrorL("添加评论返回空数据", req, rpcResp)
+		return nil, errcode.BlogNetworkBusy
+	}
+
+	return rpcResp, nil
+}
+
+func (a *CommentApplicationService) getClientAndContext(serviceName string) (context.Context, proto.CommentClient, func(), error) {
 	instance, err := consul.Client.GetHealthRandomInstance(serviceName)
 	if err != nil {
 		return nil, nil, nil, err
@@ -118,7 +122,7 @@ func (a *ArticleApplicationService) getClientAndContext(serviceName string) (con
 		}
 	}
 
-	grpcClient := proto.NewArticleClient(conn)
+	grpcClient := proto.NewCommentClient(conn)
 
 	c, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	closeFunc := func() {
