@@ -63,6 +63,7 @@ func (a *ArticleApplicationService) GetArticles(id int64, size int32) (*proto.Re
 	a.Logger.Info("rpc请求参数", req, "")
 	rpcResp, err := grpcClient.FindById(c, req)
 	if err != nil {
+		a.Logger.ErrorL("grpcClient.FindById失败", req, err.Error())
 		return nil, err
 	}
 	if rpcResp.Code != 0 {
@@ -87,6 +88,7 @@ func (a *ArticleApplicationService) GetAllArticles() (*proto.Response, error) {
 
 	rpcResp, err := grpcClient.FindAll(c, &emptypb.Empty{})
 	if err != nil {
+		a.Logger.ErrorL("grpcClient.FindAll失败", "", err.Error())
 		return nil, err
 	}
 	if rpcResp.Code != 0 {
