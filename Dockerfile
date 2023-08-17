@@ -16,10 +16,10 @@ RUN go mod tidy && go build -o app .
 FROM debian:stable-slim
 WORKDIR /app
 ENV NACOS_USE=false \
-    NACOS_NAMESPACE="" \
-    NACOS_SERVER="" \
-    NACOS_USERNAME="" \
-    NACOS_PASSWORD=""
+    NACOS_NAMESPACE="_NACOS_NAMESPACE" \
+    NACOS_SERVER="_NACOS_SERVER" \
+    NACOS_USERNAME="_NACOS_USERNAME" \
+    NACOS_PASSWORD="_NACOS_PASSWORD"
 COPY --from=builder /build/app .
 COPY --from=builder /build/log log
 COPY --from=builder /build/nacos.yaml .
