@@ -17,7 +17,7 @@ func GetArticles(c *context.Context) {
 
 	rpcResp, err := service.NewArticleApplicationService(c).GetArticles(assembler.StrToInt64(lastIdStr), 6)
 	if err != nil {
-		c.FailWithErrCode(errcode.BlogNetworkBusy, nil)
+		c.FailWithErrCode(errcode.BlogNetworkBusy, err.Error())
 		return
 	}
 
@@ -33,7 +33,7 @@ func GetArticles(c *context.Context) {
 func GetAllArticles(c *context.Context) {
 	rpcResp, err := service.NewArticleApplicationService(c).GetAllArticles()
 	if err != nil {
-		c.FailWithErrCode(errcode.BlogNetworkBusy, nil)
+		c.FailWithErrCode(errcode.BlogNetworkBusy, err.Error())
 		return
 	}
 
@@ -55,7 +55,7 @@ func GetArticle(c *context.Context) {
 
 	rpcResp, err := service.NewArticleApplicationService(c).GetById(int64(id))
 	if err != nil {
-		c.FailWithErrCode(errcode.BlogNetworkBusy, nil)
+		c.FailWithErrCode(errcode.BlogNetworkBusy, err.Error())
 		return
 	}
 
