@@ -4,6 +4,7 @@ import (
 	"gateway/infrastructure/util/util/highperf"
 	"gateway/interfaces/dto"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/bytedance/sonic"
 )
 
 func ToPixivImgDTOs(data string) (*oss.ListObjectsResult, error) {
