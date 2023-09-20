@@ -1,16 +1,16 @@
 package assembler
 
 import (
-	"encoding/json"
 	"gateway/infrastructure/util/util/highperf"
 	"gateway/interfaces/dto"
 	"gateway/interfaces/proto"
+	"github.com/bytedance/sonic"
 	"strconv"
 )
 
 func ToCommentDTOs(comments string) ([]*dto.CommentsItem, error) {
 	res := make([]*dto.CommentsItem, 0)
-	if err := json.Unmarshal(highperf.Str2bytes(comments), &res); err != nil {
+	if err := sonic.Unmarshal(highperf.Str2bytes(comments), &res); err != nil {
 		return nil, err
 	}
 	return res, nil
